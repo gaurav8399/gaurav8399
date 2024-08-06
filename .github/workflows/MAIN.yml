@@ -1,39 +1,52 @@
+# GitHub Action for generating a contribution graph with a snake eating your contributions.
 name: Generate Snake
 
+# Controls when the action will run.
 on:
   schedule:
-    - cron: '0 0 * * *' # runs at midnight every day
+      # every 12 hours
+    - cron: "0 */12 * * *"
 
+  # This command allows us to run the Action automatically from the Actions tab.
+  workflow_dispatch:
+  
+  # Also run on every push on the master branch
+  push:
+    branches:
+    - main
+
+# The sequence of runs in this workflow:
 jobs:
-  generate-snake:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Clone repo
+        uses: actions/checkout@v3
+    
+      - name: Generate the snake files in './dist/'
+        uses: Platane/snk@v3
+        id: snake-gif
         with:
-          fetch-depth: 0
+          github_user_name: ${{ github.repository_owner }}
+          outputs: |
+            dist/github-contribution-grid-snake.svg
+            dist/github-contribution-grid-snake-dark.svg?palette=github-dark
+            dist/github-contribution-grid-snake.gif?color_snake=orange&color_dots=#bfd6f6,#8dbdff,#64a1f4,#4b91f1,#3c7dd9&color_bg=#24292e&year=true
+        env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install dependencies
-        run: |
-          npm install -g svg-term-cli
-          npm install
+      - name: Show build status
+        run: git status
 
-      - name: Generate snake contribution graph
-        run: |
-          npx svg-term --in=contributions.svg --out=dist/github-contribution-grid-snake.svg --dark=dist/github-contribution-grid-snake-dark.svg --delay=100 --speed=0.1
-
-      - name: Convert SVG to GIF
-        run: |
-          ffmpeg -i dist/github-contribution-grid-snake.svg -c:v gif -s 1200x600 -preset fast dist/github-contribution-grid-snake.gif
-
-      - name: Upload GIF to GitHub
-        uses: actions/upload-artifact@v2
+      - name: Push new files to the output branch
+        uses: crazy-max/ghaction-github-pages@v3.1.0
         with:
-          name: github-contribution-grid-snake.gif
-          path: dist/github-contribution-grid-snake.gif
-
-      - name: Upload SVGs to GitHub
-        uses: actions/upload-artifact@v2
-        with:
-          name: github-contribution-grid-snake
-          path: dist/
+          target_branch: output
+          build_dir: dist
+          commit_message: Update snake animations
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
