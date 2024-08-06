@@ -9,18 +9,15 @@ jobs:
   generate-snake-files:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
       - name: Generate the snake files in './dist/'
         uses: Platane/snk@v3
         id: snake-gif
-        with:
-          github_user_name: ${{ github.repository_owner }}
-          outputs: |
-            dist/github-contribution-grid-snake.svg
-            dist/github-contribution-grid-snake-dark.svg?palette=github-dark
-            dist/github-contribution-grid-snake.gif?color_snake=orange&color_dots=#bfd6f6,#8dbdff,#64a1f4,#4b91f1,#3c7dd9&color_bg=#24292e&year=true&show_year=true&year_label=true
+    with:
+      github_user_name: ${{ github.repository_owner }}
+      outputs: |
+        dist/github-contribution-grid-snake.svg
+        dist/github-contribution-grid-snake-dark.svg?palette=github-dark
+        dist/github-contribution-grid-snake.gif?color_snake=orange&color_dots=#bfd6f6,#8dbdff,#64a1f4,#4b91f1,#3c7dd9&color_bg=#24292e&year=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
