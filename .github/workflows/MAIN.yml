@@ -1,43 +1,39 @@
-name: GitHub Snake Animation
+name: Generate Snake
 
 on:
   schedule:
-    - cron: 0 0 * * *
+    - cron: '0 0 * * *' # runs at midnight every day
 
 jobs:
-  build:
+  generate-snake:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Generate snake animation
-        uses: Platane/snk@v3
-        id: snake-gif
         with:
-          github_user_name: ${{ github.repository_owner }}
-          outputs: |
-            dist/github-contribution-grid-snake.gif
+          fetch-depth: 0
 
-      - name: Add year to snake animation
-        uses: docker://python:3.9-slim
-        env:
-          INPUT_IMAGE: dist/github-contribution-grid-snake.gif
-          OUTPUT_IMAGE: dist/github-contribution-grid-snake-year.gif
-          YEAR: ${{ github.event.schedule.datetime | date: '%Y' }}
+      - name: Install dependencies
         run: |
-          pip install pillow
-          python -c "
-            from PIL import Image, ImageDraw, ImageFont
-            image = Image.open('${INPUT_IMAGE}')
-            draw = ImageDraw.Draw(image)
-            font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 24)
-            draw.text((10, 10), '${YEAR}', font=font, fill=(255, 255, 255))
-            image.save('${OUTPUT_IMAGE}')
-          "
+          npm install -g svg-term-cli
+          npm install
 
-      - name: Upload to GitHub
+      - name: Generate snake contribution graph
+        run: |
+          npx svg-term --in=contributions.svg --out=dist/github-contribution-grid-snake.svg --dark=dist/github-contribution-grid-snake-dark.svg --delay=100 --speed=0.1
+
+      - name: Convert SVG to GIF
+        run: |
+          ffmpeg -i dist/github-contribution-grid-snake.svg -c:v gif -s 1200x600 -preset fast dist/github-contribution-grid-snake.gif
+
+      - name: Upload GIF to GitHub
         uses: actions/upload-artifact@v2
         with:
-          name: snake-gif
-          path: dist/github-contribution-grid-snake-year.gif
+          name: github-contribution-grid-snake.gif
+          path: dist/github-contribution-grid-snake.gif
+
+      - name: Upload SVGs to GitHub
+        uses: actions/upload-artifact@v2
+        with:
+          name: github-contribution-grid-snake
+          path: dist/
