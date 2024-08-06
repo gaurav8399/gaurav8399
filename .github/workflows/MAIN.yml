@@ -1,0 +1,43 @@
+name: GitHub Snake Animation
+
+on:
+  schedule:
+    - cron: 0 0 * * *
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Generate snake animation
+        uses: Platane/snk@v3
+        id: snake-gif
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          outputs: |
+            dist/github-contribution-grid-snake.gif
+
+      - name: Add year to snake animation
+        uses: docker://python:3.9-slim
+        env:
+          INPUT_IMAGE: dist/github-contribution-grid-snake.gif
+          OUTPUT_IMAGE: dist/github-contribution-grid-snake-year.gif
+          YEAR: ${{ github.event.schedule.datetime | date: '%Y' }}
+        run: |
+          pip install pillow
+          python -c "
+            from PIL import Image, ImageDraw, ImageFont
+            image = Image.open('${INPUT_IMAGE}')
+            draw = ImageDraw.Draw(image)
+            font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 24)
+            draw.text((10, 10), '${YEAR}', font=font, fill=(255, 255, 255))
+            image.save('${OUTPUT_IMAGE}')
+          "
+
+      - name: Upload to GitHub
+        uses: actions/upload-artifact@v2
+        with:
+          name: snake-gif
+          path: dist/github-contribution-grid-snake-year.gif
