@@ -19,6 +19,9 @@ Here are some ideas to get you started:
   <h2>🐍Eating Snack My Contributions 🐍</h2>
   <br>
   <img alt="snake eating my contributions" src="https://github.com/gaurav8399/gaurav8399/blob/output/github-contribution-grid-snake-dark.svg" />
+  <p>Updated on {{ date }}</p>
+  <br/><br/><br/>
+</div>
     
 <!--   ![snake gif](https://github.com/GAURAV07C/GAURAV07C/blob/output/github-contribution-grid-snake.svg) -->
   
